@@ -755,37 +755,37 @@
             URL.revokeObjectURL(url);
         }
 
-        function renderList() {
-            const listEl = document.getElementById('personList');
-            const controlsEl = document.getElementById('controls');
-            
-            if (people.length === 0) {
-                listEl.innerHTML = '<div class="empty-state">Chưa có ai trong danh sách. Hãy thêm người mới!</div>';
-                controlsEl.style.display = 'none';
-                return;
-            }
-            
-            controlsEl.style.display = 'block';
-            
-            const totalPeople = people.length;
-            const totalTicks = people.reduce((sum, p) => sum + p.count, 0);
-            document.getElementById('totalPeople').textContent = totalPeople;
-            document.getElementById('totalTicks').textContent = totalTicks;
+       function renderList() {
+    const listEl = document.getElementById('personList');
+    const controlsEl = document.getElementById('controls');
 
-            listEl.innerHTML = people.map(person => `
-                <div class="person-item">
-                    <div class="person-info">
-                        <div class="person-name">${person.name}</div>
-                        <div class="person-count">${person.count} lần</div>
-                    </div>
-                    <div class="person-actions">
-                        <button class="tick-btn" onclick="tick(${person.id})">✓</button>
-                        <button class="reset-btn" onclick="reset(${person.id})">Reset</button>
-                        <button class="delete-btn" onclick="deletePerson(${person.id})">Xóa</button>
-                    </div>
-                </div>
-            `).join('');
-        }
+    if (people.length === 0) {
+        listEl.innerHTML = '<div class="empty-state">Chưa có ai trong danh sách. Hãy thêm người mới!</div>';
+        controlsEl.style.display = 'none';
+        return;
+    }
+
+    controlsEl.style.display = 'block';
+
+    listEl.innerHTML = people.map(p => `
+        <div class="person-item">
+            <div class="person-info">
+                <div class="person-name">${p.name}</div>
+                <div class="person-count">${p.count}</div>
+            </div>
+
+            <div class="person-actions">
+                <button class="tick-btn" onclick="tick(${p.id})">+</button>
+                <button class="reset-btn" onclick="reset(${p.id})">Reset</button>
+                <button class="delete-btn" onclick="deletePerson(${p.id})">Xóa</button>
+            </div>
+        </div>
+    `).join('');
+
+    // Cập nhật thống kê
+    document.getElementById('totalPeople').textContent = people.length;
+    document.getElementById('totalTicks').textContent = people.reduce((sum, p) => sum + p.count, 0);
+}
 
         document.getElementById('nameInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -810,6 +810,7 @@
     </script>
 </body>
 </html>
+
 
 
 
