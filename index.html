@@ -588,10 +588,34 @@
             }
         }
 
+         // Tạo mã đơn giản (6 ký tự số)
+        function generateSimpleCode() {
+            const timestamp = Date.now().toString();
+            const hash = timestamp.slice(-6); // Lấy 6 số cuối
+            return hash;
+        }
+
+        // Lưu dữ liệu vào bộ nhớ tạm với mã
+        const sharedData = {};
+
         // Chia sẻ dữ liệu qua mã
         function openShareModal() {
-            const code = btoa(encodeURIComponent(JSON.stringify(people)));
-            document.getElementById('shareCode').textContent = code;
+            const simpleCode = generateSimpleCode();
+            // Lưu vào localStorage với key là mã
+            const shareKey = `share_${simpleCode}`;
+            localStorage.setItem(shareKey, JSON.stringify(people));
+            
+            // Hiển thị mã đơn giản
+            document.getElementById('shareCode').innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <div style="font-size: 48px; font-weight: 900; color: #667eea; letter-spacing: 5px; font-family: 'Courier New', monospace;">
+                        ${simpleCode}
+                    </div>
+                    <div style="margin-top: 15px; color: #666; font-size: 14px;">
+                        Mã này có hiệu lực trong 24 giờ
+                    </div>
+                </div>
+            `;
             document.getElementById('shareModal').classList.add('active');
         }
 
@@ -600,11 +624,12 @@
         }
 
         function copyShareCode() {
-            const code = document.getElementById('shareCode').textContent;
+            const codeElement = document.querySelector('#shareCode > div > div:first-child');
+            const code = codeElement.textContent.trim();
             navigator.clipboard.writeText(code).then(() => {
-                alert('✅ Đã sao chép mã! Gửi mã này cho thiết bị khác.');
+                alert('✅ Đã sao chép mã: ' + code + '\nGửi mã này cho thiết bị khác!');
             }).catch(() => {
-                alert('❌ Không thể sao chép. Hãy chọn và copy thủ công.');
+                alert('Mã của bạn là: ' + code + '\nHãy ghi nhớ hoặc chụp màn hình!');
             });
         }
 
@@ -641,21 +666,32 @@
             }
         }
 
-        // Xuất ra file JSON
+       // Xuất ra file Excel
         function exportToFile() {
-            const dataStr = JSON.stringify(people, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
+            // Tạo nội dung CSV (Excel có thể đọc được)
+            let csvContent = "\uFEFF"; // BOM cho UTF-8
+            csvContent += "STT,Họ và Tên,Số lần vi phạm\n";
+            
+            people.forEach((person, index) => {
+                csvContent += `${index + 1},"${person.name}",${person.count}\n`;
+            });
+            
+            // Thêm tổng kết
+            const total = people.reduce((sum, p) => sum + p.count, 0);
+            csvContent += `\n,TỔNG CỘNG,${total}\n`;
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `du-lieu-vi-pham-${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `bao-cao-vi-pham-${new Date().toISOString().split('T')[0]}.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
 
-        // Nhập từ file JSON
+        // Nhập từ file Excel/CSV
         function importFromFile(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -663,23 +699,55 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const imported = JSON.parse(e.target.result);
-                    if (Array.isArray(imported)) {
+                    const text = e.target.result;
+                    
+                    // Kiểm tra xem có phải file JSON không
+                    if (file.name.endsWith('.json')) {
+                        const imported = JSON.parse(text);
+                        if (Array.isArray(imported)) {
+                            people = imported;
+                            saveData();
+                            renderList();
+                            alert(`✅ Đã nhập thành công ${people.length} người!`);
+                            return;
+                        }
+                    }
+                    
+                    // Xử lý file CSV/Excel
+                    const lines = text.split('\n');
+                    const imported = [];
+                    
+                    // Bỏ qua dòng tiêu đề
+                    for (let i = 1; i < lines.length; i++) {
+                        const line = lines[i].trim();
+                        if (!line || line.includes('TỔNG CỘNG')) continue;
+                        
+                        // Tách dữ liệu (xử lý cả trường hợp có dấu ngoặc kép)
+                        const match = line.match(/^\d+,"?([^"]+)"?,(\d+)/);
+                        if (match) {
+                            imported.push({
+                                id: Date.now() + i,
+                                name: match[1].trim(),
+                                count: parseInt(match[2])
+                            });
+                        }
+                    }
+                    
+                    if (imported.length > 0) {
                         people = imported;
                         saveData();
                         renderList();
-                        alert(`✅ Đã nhập thành công ${people.length} người!`);
+                        alert(`✅ Đã nhập thành công ${people.length} người từ Excel!`);
                     } else {
-                        alert('❌ File không đúng định dạng!');
+                        alert('❌ File không có dữ liệu hợp lệ!');
                     }
                 } catch (error) {
                     console.error('Lỗi đọc file:', error);
-                    alert('❌ Không thể đọc file!');
+                    alert('❌ Không thể đọc file! Đảm bảo file đúng định dạng.');
                 }
             };
             reader.readAsText(file);
         }
-
         function renderList() {
             const listEl = document.getElementById('personList');
             const controlsEl = document.getElementById('controls');
@@ -691,7 +759,6 @@
             }
             
             controlsEl.style.display = 'block';
-            
             // Cập nhật thống kê
             const totalPeople = people.length;
             const totalTicks = people.reduce((sum, p) => sum + p.count, 0);
