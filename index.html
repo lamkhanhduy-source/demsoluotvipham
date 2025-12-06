@@ -33,8 +33,18 @@
         h1 {
             text-align: center;
             color: #333;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             font-size: 28px;
+        }
+
+        .sync-info {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #e0f2fe;
+            border-radius: 10px;
+            font-size: 13px;
+            color: #0c4a6e;
         }
 
         .add-person {
@@ -217,7 +227,7 @@
             justify-content: center;
         }
         
-        .sort-btn, .export-btn, .reset-all-btn, .delete-all-btn {
+        .sort-btn, .export-btn, .import-btn, .share-btn, .reset-all-btn, .delete-all-btn {
             padding: 10px 20px;
             border: none;
             border-radius: 8px;
@@ -234,6 +244,24 @@
         
         .sort-btn:hover {
             background: #5568d3;
+        }
+
+        .import-btn {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .import-btn:hover {
+            background: #7c3aed;
+        }
+
+        .share-btn {
+            background: #06b6d4;
+            color: white;
+        }
+
+        .share-btn:hover {
+            background: #0891b2;
         }
         
         .export-btn {
@@ -262,6 +290,111 @@
         .delete-all-btn:hover {
             background: #dc2626;
         }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .close-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: #dc2626;
+        }
+
+        .share-code {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 15px 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        #fileInput {
+            display: none;
+        }
         
         @media (max-width: 600px) {
             .stats {
@@ -272,15 +405,21 @@
                 flex: 1 1 calc(50% - 5px);
             }
         }
-            .banquyen {
+
+        .banquyen {
             text-align: center;
             font-weight: 800;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>📊 Đếm Số Lượt Vi Phạm Quy Định</h1>
+        
+        <div class="sync-info">
+            💡 <strong>Mẹo:</strong> Dùng "Chia sẻ mã" để chuyển dữ liệu giữa các thiết bị hoặc "Xuất/Nhập file" để sao lưu
+        </div>
         
         <div class="add-person">
             <input type="text" id="nameInput" placeholder="Nhập họ và tên..." />
@@ -298,26 +437,84 @@
                     <span class="stat-value" id="totalPeople">0</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Tổng số lượt:</span>
+                    <span class="stat-label">Tổng số tick:</span>
                     <span class="stat-value" id="totalTicks">0</span>
                 </div>
             </div>
             
             <div class="action-buttons">
-                <button class="sort-btn" onclick="sortBy('name')">📝 Sắp xếp A-Z</button>
-                <button class="sort-btn" onclick="sortBy('count')">📊 Sắp xếp theo số tick</button>
-                <button class="export-btn" onclick="exportData()">💾 Xuất dữ liệu</button>
-                <button class="reset-all-btn" onclick="resetAll()">🔄 Reset tất cả</button>
+                <button class="share-btn" onclick="openShareModal()">🔗 Chia sẻ mã</button>
+                <button class="import-btn" onclick="openImportModal()">📥 Nhập mã</button>
+                <button class="export-btn" onclick="exportToFile()">💾 Xuất file</button>
+                <button class="import-btn" onclick="document.getElementById('fileInput').click()">📁 Nhập file</button>
+                <button class="sort-btn" onclick="sortBy('name')">📝 A-Z</button>
+                <button class="sort-btn" onclick="sortBy('count')">📊 Số tick</button>
+                <button class="reset-all-btn" onclick="resetAll()">🔄 Reset</button>
                 <button class="delete-all-btn" onclick="deleteAll()">🗑️ Xóa tất cả</button>
             </div>
         </div>
         <br>
         <div class="banquyen">
-                <p>Design By Lâm Khánh Duy</p>
+            <p>Design By Lâm Khánh Duy</p>
+            <p style="font-size: 12px; color: #666; margin-top: 5px;">✨ Chia sẻ dữ liệu dễ dàng giữa các thiết bị</p>
         </div>
     </div>
+
+    <!-- Modal Chia sẻ -->
+    <div class="modal" id="shareModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">🔗 Chia sẻ dữ liệu</div>
+                <button class="close-btn" onclick="closeShareModal()">×</button>
+            </div>
+            <p style="margin-bottom: 15px; color: #666;">Sao chép mã này và gửi cho thiết bị khác:</p>
+            <div class="share-code" id="shareCode"></div>
+            <button class="copy-btn" onclick="copyShareCode()">📋 Sao chép mã</button>
+        </div>
+    </div>
+
+    <!-- Modal Nhập -->
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📥 Nhập dữ liệu</div>
+                <button class="close-btn" onclick="closeImportModal()">×</button>
+            </div>
+            <p style="margin-bottom: 15px; color: #666;">Dán mã chia sẻ vào đây:</p>
+            <textarea id="importCode" placeholder="Dán mã chia sẻ vào đây..."></textarea>
+            <br><br>
+            <button class="copy-btn" onclick="importFromCode()">✅ Nhập dữ liệu</button>
+        </div>
+    </div>
+
+    <input type="file" id="fileInput" accept=".json" onchange="importFromFile(event)" />
+
     <script>
-        let people = JSON.parse(localStorage.getItem('violationCounter_people')) || [];
+        let people = [];
+
+        // Load dữ liệu từ localStorage
+        function loadData() {
+            try {
+                const saved = localStorage.getItem('violationCounter_people');
+                if (saved) {
+                    people = JSON.parse(saved);
+                    console.log('✅ Đã tải', people.length, 'người từ localStorage');
+                }
+            } catch (e) {
+                console.error('❌ Lỗi khi tải dữ liệu:', e);
+            }
+        }
+
+        // Lưu dữ liệu vào localStorage
+        function saveData() {
+            try {
+                localStorage.setItem('violationCounter_people', JSON.stringify(people));
+                console.log('✅ Đã lưu', people.length, 'người');
+            } catch (e) {
+                console.error('❌ Lỗi khi lưu:', e);
+                alert('Lỗi: Không thể lưu dữ liệu!');
+            }
+        }
 
         function addPerson() {
             const input = document.getElementById('nameInput');
@@ -337,10 +534,6 @@
             input.value = '';
             saveData();
             renderList();
-        }
-        
-        function saveData() {
-            localStorage.setItem('violationCounter_people', JSON.stringify(people));
         }
 
         function tick(id) {
@@ -394,18 +587,97 @@
                 renderList();
             }
         }
-        
-        function exportData() {
-            const data = people.map(p => `${p.name}: ${p.count} lần`).join('\n');
-            const total = people.reduce((sum, p) => sum + p.count, 0);
-            const exportText = `📊 BÁO CÁO TICK\n\n${data}\n\n🔢 Tổng cộng: ${total} lần`;
-            
-            const blob = new Blob([exportText], { type: 'text/plain' });
+
+        // Chia sẻ dữ liệu qua mã
+        function openShareModal() {
+            const code = btoa(encodeURIComponent(JSON.stringify(people)));
+            document.getElementById('shareCode').textContent = code;
+            document.getElementById('shareModal').classList.add('active');
+        }
+
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.remove('active');
+        }
+
+        function copyShareCode() {
+            const code = document.getElementById('shareCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('✅ Đã sao chép mã! Gửi mã này cho thiết bị khác.');
+            }).catch(() => {
+                alert('❌ Không thể sao chép. Hãy chọn và copy thủ công.');
+            });
+        }
+
+        // Nhập dữ liệu từ mã
+        function openImportModal() {
+            document.getElementById('importModal').classList.add('active');
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').classList.remove('active');
+        }
+
+        function importFromCode() {
+            const code = document.getElementById('importCode').value.trim();
+            if (!code) {
+                alert('Vui lòng dán mã chia sẻ!');
+                return;
+            }
+
+            try {
+                const decoded = JSON.parse(decodeURIComponent(atob(code)));
+                if (Array.isArray(decoded)) {
+                    people = decoded;
+                    saveData();
+                    renderList();
+                    closeImportModal();
+                    alert(`✅ Đã nhập thành công ${people.length} người!`);
+                } else {
+                    alert('❌ Mã không hợp lệ!');
+                }
+            } catch (e) {
+                console.error('Lỗi nhập:', e);
+                alert('❌ Mã không hợp lệ hoặc bị lỗi!');
+            }
+        }
+
+        // Xuất ra file JSON
+        function exportToFile() {
+            const dataStr = JSON.stringify(people, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `bao-cao-tick-${new Date().toLocaleDateString('vi-VN')}.txt`;
+            a.download = `du-lieu-vi-pham-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
             a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Nhập từ file JSON
+        function importFromFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) {
+                        people = imported;
+                        saveData();
+                        renderList();
+                        alert(`✅ Đã nhập thành công ${people.length} người!`);
+                    } else {
+                        alert('❌ File không đúng định dạng!');
+                    }
+                } catch (error) {
+                    console.error('Lỗi đọc file:', error);
+                    alert('❌ Không thể đọc file!');
+                }
+            };
+            reader.readAsText(file);
         }
 
         function renderList() {
@@ -447,13 +719,19 @@
                 addPerson();
             }
         });
-        // Tự động lưu khi tắt trang
-        window.addEventListener('beforeunload', function(e) {
-            saveData();
+
+        // Đóng modal khi click bên ngoài
+        document.getElementById('shareModal').addEventListener('click', function(e) {
+            if (e.target === this) closeShareModal();
         });
+
+        document.getElementById('importModal').addEventListener('click', function(e) {
+            if (e.target === this) closeImportModal();
+        });
+
         // Khởi tạo
+        loadData();
         renderList();
     </script>
 </body>
-
 </html>
