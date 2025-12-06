@@ -298,7 +298,7 @@
                     <span class="stat-value" id="totalPeople">0</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Tổng số tick:</span>
+                    <span class="stat-label">Tổng số lượt:</span>
                     <span class="stat-value" id="totalTicks">0</span>
                 </div>
             </div>
@@ -317,7 +317,7 @@
         </div>
     </div>
     <script>
-        let people = JSON.parse(localStorage.getItem('people')) || [];
+        let people = JSON.parse(localStorage.getItem('violationCounter_people')) || [];
 
         function addPerson() {
             const input = document.getElementById('nameInput');
@@ -340,7 +340,7 @@
         }
         
         function saveData() {
-            localStorage.setItem('people', JSON.stringify(people));
+            localStorage.setItem('violationCounter_people', JSON.stringify(people));
         }
 
         function tick(id) {
@@ -447,9 +447,13 @@
                 addPerson();
             }
         });
-
+        // Tự động lưu khi tắt trang
+        window.addEventListener('beforeunload', function(e) {
+            saveData();
+        });
         // Khởi tạo
         renderList();
     </script>
 </body>
+
 </html>
