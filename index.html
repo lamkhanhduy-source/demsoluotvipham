@@ -445,26 +445,6 @@
         <!-- Setup Box -->
         <div class="setup-box" id="setupBox">
             <h3>☁️ Thiết lập đồng bộ GitHub Gist <span class="info-badge">MIỄN PHÍ</span></h3>
-            
-            <p><strong>📌 Hướng dẫn nhanh:</strong></p>
-            <ol>
-                <li>Vào <span class="link" onclick="window.open('https://gist.github.com', '_blank')">gist.github.com</span> (đăng nhập GitHub)</li>
-                <li>Tạo Gist mới:
-                    <br>• Filename: <code>violation-data.json</code>
-                    <br>• Nội dung: <code>{"people":[]}</code>
-                    <br>• Chọn "Create public gist"
-                </li>
-                <li>Copy <strong>Gist ID</strong> từ URL (đoạn sau username)<br>
-                    VD: <code>gist.github.com/user/<strong>abc123def456</strong></code>
-                </li>
-                <li>Tạo Token: <span class="link" onclick="window.open('https://github.com/settings/tokens', '_blank')">github.com/settings/tokens</span>
-                    <br>• Nhấn "Generate new token (classic)"
-                    <br>• Tên: <code>Violation Counter</code>
-                    <br>• Chọn quyền: <code>gist</code>
-                    <br>• Generate và copy token
-                </li>
-            </ol>
-
             <input type="text" id="gistIdInput" placeholder="Nhập Gist ID (vd: abc123def456789)" />
             <input type="text" id="tokenInput" placeholder="Nhập GitHub Token (ghp_xxx...)" />
             <button onclick="saveGistSettings()">💾 Lưu cài đặt và đồng bộ</button>
@@ -831,4 +811,5 @@
     </script>
 </body>
 </html>
+
 
