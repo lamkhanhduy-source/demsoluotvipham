@@ -50,6 +50,11 @@
             font-weight: 600;
         }
 
+        .sync-status.local {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
         .sync-status.online {
             background: #d1fae5;
             color: #065f46;
@@ -63,11 +68,6 @@
         .sync-status.offline {
             background: #fee2e2;
             color: #991b1b;
-        }
-
-        .sync-status.setup {
-            background: #dbeafe;
-            color: #1e40af;
         }
 
         .setup-box {
@@ -88,6 +88,18 @@
             color: #475569;
             margin-bottom: 10px;
             line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .setup-box ol {
+            color: #475569;
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .setup-box li {
+            margin-bottom: 8px;
+            line-height: 1.5;
         }
 
         .setup-box input {
@@ -110,6 +122,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: background 0.3s;
+            margin-top: 10px;
         }
 
         .setup-box button:hover {
@@ -120,6 +133,15 @@
             color: #3b82f6;
             text-decoration: underline;
             cursor: pointer;
+            font-weight: 600;
+        }
+
+        .setup-box code {
+            background: #1e293b;
+            color: #22d3ee;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 13px;
         }
 
         .add-person {
@@ -366,27 +388,6 @@
             background: #dc2626;
         }
 
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #667eea;
-        }
-
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
@@ -419,27 +420,56 @@
         .hidden {
             display: none;
         }
+
+        .info-badge {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>📊 Đếm Số Lượt Vi Phạm Quy Định</h1>
         
-        <div class="sync-status setup" id="syncStatus">
-            <span id="syncIcon">⚙️</span>
-            <span id="syncText">Chưa thiết lập đồng bộ</span>
+        <div class="sync-status local" id="syncStatus">
+            <span id="syncIcon">📱</span>
+            <span id="syncText">Chế độ Local - Chỉ lưu trên thiết bị này</span>
         </div>
 
         <!-- Setup Box -->
         <div class="setup-box" id="setupBox">
-            <h3>🔧 Thiết lập đồng bộ Cloud (Tùy chọn)</h3>
-            <p><strong>Bước 1:</strong> Truy cập <span class="link" onclick="window.open('https://jsonbin.io', '_blank')">jsonbin.io</span> và đăng ký miễn phí</p>
-            <p><strong>Bước 2:</strong> Tạo bin mới, copy <strong>Bin ID</strong> và <strong>API Key</strong></p>
-            <input type="text" id="binIdInput" placeholder="Nhập Bin ID (vd: 67528abc9f1b4e2b1c3d4e5f)" />
-            <input type="text" id="apiKeyInput" placeholder="Nhập API Key" />
-            <button onclick="saveCloudSettings()">💾 Lưu cài đặt</button>
+            <h3>☁️ Thiết lập đồng bộ GitHub Gist <span class="info-badge">MIỄN PHÍ</span></h3>
+            
+            <p><strong>📌 Hướng dẫn nhanh:</strong></p>
+            <ol>
+                <li>Vào <span class="link" onclick="window.open('https://gist.github.com', '_blank')">gist.github.com</span> (đăng nhập GitHub)</li>
+                <li>Tạo Gist mới:
+                    <br>• Filename: <code>violation-data.json</code>
+                    <br>• Nội dung: <code>{"people":[]}</code>
+                    <br>• Chọn "Create public gist"
+                </li>
+                <li>Copy <strong>Gist ID</strong> từ URL (đoạn sau username)<br>
+                    VD: <code>gist.github.com/user/<strong>abc123def456</strong></code>
+                </li>
+                <li>Tạo Token: <span class="link" onclick="window.open('https://github.com/settings/tokens', '_blank')">github.com/settings/tokens</span>
+                    <br>• Nhấn "Generate new token (classic)"
+                    <br>• Tên: <code>Violation Counter</code>
+                    <br>• Chọn quyền: <code>gist</code>
+                    <br>• Generate và copy token
+                </li>
+            </ol>
+
+            <input type="text" id="gistIdInput" placeholder="Nhập Gist ID (vd: abc123def456789)" />
+            <input type="text" id="tokenInput" placeholder="Nhập GitHub Token (ghp_xxx...)" />
+            <button onclick="saveGistSettings()">💾 Lưu cài đặt và đồng bộ</button>
             <p style="margin-top: 10px; font-size: 12px; color: #64748b;">
-                ⚠️ Nếu bỏ qua, dữ liệu chỉ lưu trên thiết bị này
+                ⚠️ Bỏ qua → Chỉ lưu trên thiết bị này (không đồng bộ)
             </p>
         </div>
         
@@ -477,57 +507,59 @@
         <br>
         <div class="banquyen">
             <p>Design By Lâm Khánh Duy</p>
-            <p style="font-size: 12px; color: #666; margin-top: 5px;">☁️ Hỗ trợ đồng bộ cloud tùy chọn</p>
+            <p style="font-size: 12px; color: #666; margin-top: 5px;">☁️ Hỗ trợ đồng bộ GitHub Gist (miễn phí)</p>
         </div>
     </div>
 
     <script>
         let people = [];
         let isSyncing = false;
-        let cloudConfig = {
-            binId: '',
-            apiKey: '',
+        let gistConfig = {
+            gistId: '',
+            token: '',
             enabled: false
         };
 
-        // Load config từ localStorage
+        // Load config
         function loadConfig() {
-            const saved = localStorage.getItem('cloudConfig');
+            const saved = localStorage.getItem('gistConfig');
             if (saved) {
-                cloudConfig = JSON.parse(saved);
-                if (cloudConfig.enabled) {
+                gistConfig = JSON.parse(saved);
+                if (gistConfig.enabled) {
                     document.getElementById('setupBox').classList.add('hidden');
-                    updateSyncStatus('online', 'Cloud đã kết nối ✅', '☁️');
+                    updateSyncStatus('online', 'GitHub Gist đã kết nối ✅', '☁️');
                 }
             }
         }
 
         // Lưu config
-        function saveCloudSettings() {
-            const binId = document.getElementById('binIdInput').value.trim();
-            const apiKey = document.getElementById('apiKeyInput').value.trim();
+        async function saveGistSettings() {
+            const gistId = document.getElementById('gistIdInput').value.trim();
+            const token = document.getElementById('tokenInput').value.trim();
             
-            if (!binId || !apiKey) {
-                alert('Vui lòng nhập đầy đủ Bin ID và API Key!');
+            if (!gistId || !token) {
+                alert('❌ Vui lòng nhập đầy đủ Gist ID và Token!');
                 return;
             }
 
-            cloudConfig = { binId, apiKey, enabled: true };
-            localStorage.setItem('cloudConfig', JSON.stringify(cloudConfig));
+            gistConfig = { gistId, token, enabled: true };
+            localStorage.setItem('gistConfig', JSON.stringify(gistConfig));
             document.getElementById('setupBox').classList.add('hidden');
-            updateSyncStatus('online', 'Cloud đã kết nối ✅', '☁️');
-            alert('✅ Đã lưu cài đặt! Bây giờ dữ liệu sẽ đồng bộ qua cloud.');
-            loadFromCloud();
+            updateSyncStatus('online', 'GitHub Gist đã kết nối ✅', '☁️');
+            
+            // Thử load ngay
+            await loadFromGist();
+            alert('✅ Đã kết nối! Dữ liệu sẽ đồng bộ tự động.');
         }
 
-        // Toggle setup box
+        // Toggle setup
         function toggleSetup() {
             const box = document.getElementById('setupBox');
             box.classList.toggle('hidden');
         }
 
-        // Cập nhật trạng thái
-        function updateSyncStatus(status, message, icon = '☁️') {
+        // Update status
+        function updateSyncStatus(status, message, icon = '📱') {
             const statusEl = document.getElementById('syncStatus');
             const textEl = document.getElementById('syncText');
             const iconEl = document.getElementById('syncIcon');
@@ -543,67 +575,75 @@
             }
         }
 
-        // Lưu lên cloud
-        async function saveToCloud() {
-            if (!cloudConfig.enabled || isSyncing) return;
+        // Lưu lên Gist
+        async function saveToGist() {
+            if (!gistConfig.enabled || isSyncing) return;
             
             isSyncing = true;
-            updateSyncStatus('syncing', 'Đang lưu lên cloud...', '🔄');
+            updateSyncStatus('syncing', 'Đang lưu lên GitHub...', '🔄');
             
             try {
-                const response = await fetch(`https://api.jsonbin.io/v3/b/${cloudConfig.binId}`, {
-                    method: 'PUT',
+                const response = await fetch(`https://api.github.com/gists/${gistConfig.gistId}`, {
+                    method: 'PATCH',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': cloudConfig.apiKey
+                        'Authorization': `token ${gistConfig.token}`,
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        people: people,
-                        lastUpdate: new Date().toISOString()
+                        files: {
+                            'violation-data.json': {
+                                content: JSON.stringify({
+                                    people: people,
+                                    lastUpdate: new Date().toISOString()
+                                }, null, 2)
+                            }
+                        }
                     })
                 });
 
                 if (response.ok) {
                     updateSyncStatus('online', `✅ Đã đồng bộ (${people.length} người)`, '☁️');
-                    console.log('✅ Đã lưu lên cloud');
+                    console.log('✅ Đã lưu lên GitHub Gist');
                 } else {
                     throw new Error('Không thể lưu');
                 }
             } catch (error) {
                 console.error('❌ Lỗi:', error);
-                updateSyncStatus('offline', '❌ Lỗi đồng bộ', '⚠️');
+                updateSyncStatus('offline', '❌ Lỗi đồng bộ - ' + error.message, '⚠️');
             } finally {
                 isSyncing = false;
             }
         }
 
-        // Tải từ cloud
-        async function loadFromCloud() {
-            if (!cloudConfig.enabled) {
+        // Tải từ Gist
+        async function loadFromGist() {
+            if (!gistConfig.enabled) {
                 loadFromLocal();
                 return;
             }
             
-            updateSyncStatus('syncing', 'Đang tải từ cloud...', '🔄');
+            updateSyncStatus('syncing', 'Đang tải từ GitHub...', '🔄');
             
             try {
-                const response = await fetch(`https://api.jsonbin.io/v3/b/${cloudConfig.binId}/latest`, {
+                const response = await fetch(`https://api.github.com/gists/${gistConfig.gistId}`, {
                     headers: {
-                        'X-Master-Key': cloudConfig.apiKey
+                        'Authorization': `token ${gistConfig.token}`
                     }
                 });
 
                 if (response.ok) {
-                    const data = await response.json();
-                    people = data.record.people || [];
+                    const gist = await response.json();
+                    const fileContent = gist.files['violation-data.json'].content;
+                    const data = JSON.parse(fileContent);
+                    people = data.people || [];
                     updateSyncStatus('online', `✅ Đã tải (${people.length} người)`, '☁️');
-                    console.log('✅ Đã tải từ cloud');
+                    console.log('✅ Đã tải từ GitHub Gist');
                 } else {
                     throw new Error('Không thể tải');
                 }
             } catch (error) {
                 console.error('❌ Lỗi:', error);
-                updateSyncStatus('offline', '❌ Lỗi tải dữ liệu', '⚠️');
+                updateSyncStatus('offline', '❌ Lỗi tải - kiểm tra Gist ID/Token', '⚠️');
                 loadFromLocal();
             }
             
@@ -611,12 +651,11 @@
             renderList();
         }
 
-        // Lưu local
+        // Local storage
         function saveToLocal() {
             localStorage.setItem('violationData', JSON.stringify(people));
         }
 
-        // Tải local
         function loadFromLocal() {
             const saved = localStorage.getItem('violationData');
             if (saved) {
@@ -625,15 +664,15 @@
             renderList();
         }
 
-        // Đồng bộ thủ công
+        // Manual sync
         async function manualSync() {
-            if (!cloudConfig.enabled) {
-                alert('⚠️ Chưa thiết lập cloud! Nhấn "⚙️ Cài đặt" để cấu hình.');
+            if (!gistConfig.enabled) {
+                alert('⚠️ Chưa thiết lập GitHub Gist! Nhấn "⚙️ Cài đặt" để cấu hình.');
                 toggleSetup();
                 return;
             }
-            await saveToCloud();
-            await loadFromCloud();
+            await saveToGist();
+            await loadFromGist();
         }
 
         async function addPerson() {
@@ -653,7 +692,7 @@
 
             input.value = '';
             saveToLocal();
-            if (cloudConfig.enabled) await saveToCloud();
+            if (gistConfig.enabled) await saveToGist();
             renderList();
         }
 
@@ -662,7 +701,7 @@
             if (person) {
                 person.count++;
                 saveToLocal();
-                if (cloudConfig.enabled) await saveToCloud();
+                if (gistConfig.enabled) await saveToGist();
                 renderList();
             }
         }
@@ -672,7 +711,7 @@
             if (person) {
                 person.count = 0;
                 saveToLocal();
-                if (cloudConfig.enabled) await saveToCloud();
+                if (gistConfig.enabled) await saveToGist();
                 renderList();
             }
         }
@@ -681,7 +720,7 @@
             if (confirm('Bạn có chắc muốn xóa người này?')) {
                 people = people.filter(p => p.id !== id);
                 saveToLocal();
-                if (cloudConfig.enabled) await saveToCloud();
+                if (gistConfig.enabled) await saveToGist();
                 renderList();
             }
         }
@@ -693,7 +732,7 @@
                 people.sort((a, b) => b.count - a.count);
             }
             saveToLocal();
-            if (cloudConfig.enabled) await saveToCloud();
+            if (gistConfig.enabled) await saveToGist();
             renderList();
         }
         
@@ -701,7 +740,7 @@
             if (confirm('Bạn có chắc muốn reset tất cả về 0?')) {
                 people.forEach(p => p.count = 0);
                 saveToLocal();
-                if (cloudConfig.enabled) await saveToCloud();
+                if (gistConfig.enabled) await saveToGist();
                 renderList();
             }
         }
@@ -710,7 +749,7 @@
             if (confirm('Bạn có chắc muốn xóa tất cả người trong danh sách?')) {
                 people = [];
                 saveToLocal();
-                if (cloudConfig.enabled) await saveToCloud();
+                if (gistConfig.enabled) await saveToGist();
                 renderList();
             }
         }
@@ -775,17 +814,17 @@
             }
         });
 
-        // Tự động đồng bộ 60s
+        // Auto sync
         setInterval(async () => {
-            if (cloudConfig.enabled && !isSyncing && people.length > 0) {
-                await loadFromCloud();
+            if (gistConfig.enabled && !isSyncing && people.length > 0) {
+                await loadFromGist();
             }
         }, 60000);
 
-        // Khởi tạo
+        // Init
         loadConfig();
-        if (cloudConfig.enabled) {
-            loadFromCloud();
+        if (gistConfig.enabled) {
+            loadFromGist();
         } else {
             loadFromLocal();
         }
