@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đếm Số Lượt Vi Phạm Quy Định</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .add-person {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .add-person input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .add-person input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .add-person button {
+            padding: 12px 25px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .add-person button:hover {
+            background: #5568d3;
+        }
+
+        .person-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .person-item {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .person-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .person-info {
+            flex: 1;
+        }
+
+        .person-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .person-count {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .person-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .tick-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tick-btn:hover {
+            background: #059669;
+            transform: scale(1.1);
+        }
+
+        .tick-btn:active {
+            transform: scale(0.95);
+        }
+
+        .reset-btn {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .reset-btn:hover {
+            background: #d97706;
+        }
+
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #dc2626;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+        
+        .controls {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            flex: 1;
+        }
+        
+        .stat-label {
+            display: block;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            display: block;
+            font-size: 28px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .sort-btn, .export-btn, .reset-all-btn, .delete-all-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .sort-btn {
+            background: #667eea;
+            color: white;
+        }
+        
+        .sort-btn:hover {
+            background: #5568d3;
+        }
+        
+        .export-btn {
+            background: #10b981;
+            color: white;
+        }
+        
+        .export-btn:hover {
+            background: #059669;
+        }
+        
+        .reset-all-btn {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .reset-all-btn:hover {
+            background: #d97706;
+        }
+        
+        .delete-all-btn {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .delete-all-btn:hover {
+            background: #dc2626;
+        }
+        
+        @media (max-width: 600px) {
+            .stats {
+                flex-direction: column;
+            }
+            
+            .action-buttons button {
+                flex: 1 1 calc(50% - 5px);
+            }
+        }
+            .banquyen {
+            text-align: center;
+            font-weight: 800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Đếm Số Lượt Vi Phạm Quy Định</h1>
+        
+        <div class="add-person">
+            <input type="text" id="nameInput" placeholder="Nhập họ và tên..." />
+            <button onclick="addPerson()">Thêm</button>
+        </div>
+
+        <div class="person-list" id="personList">
+            <div class="empty-state">Chưa có ai trong danh sách. Hãy thêm người mới!</div>
+        </div>
+        
+        <div class="controls" id="controls" style="display: none;">
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-label">Tổng số người:</span>
+                    <span class="stat-value" id="totalPeople">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Tổng số tick:</span>
+                    <span class="stat-value" id="totalTicks">0</span>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="sort-btn" onclick="sortBy('name')">📝 Sắp xếp A-Z</button>
+                <button class="sort-btn" onclick="sortBy('count')">📊 Sắp xếp theo số tick</button>
+                <button class="export-btn" onclick="exportData()">💾 Xuất dữ liệu</button>
+                <button class="reset-all-btn" onclick="resetAll()">🔄 Reset tất cả</button>
+                <button class="delete-all-btn" onclick="deleteAll()">🗑️ Xóa tất cả</button>
+            </div>
+        </div>
+        <br>
+        <div class="banquyen">
+                <p>Design By Lâm Khánh Duy</p>
+        </div>
+    </div>
+    <script>
+        let people = JSON.parse(localStorage.getItem('people')) || [];
+
+        function addPerson() {
+            const input = document.getElementById('nameInput');
+            const name = input.value.trim();
+            
+            if (name === '') {
+                alert('Vui lòng nhập tên!');
+                return;
+            }
+
+            people.push({
+                id: Date.now(),
+                name: name,
+                count: 0
+            });
+
+            input.value = '';
+            saveData();
+            renderList();
+        }
+        
+        function saveData() {
+            localStorage.setItem('people', JSON.stringify(people));
+        }
+
+        function tick(id) {
+            const person = people.find(p => p.id === id);
+            if (person) {
+                person.count++;
+                saveData();
+                renderList();
+            }
+        }
+
+        function reset(id) {
+            const person = people.find(p => p.id === id);
+            if (person) {
+                person.count = 0;
+                saveData();
+                renderList();
+            }
+        }
+
+        function deletePerson(id) {
+            if (confirm('Bạn có chắc muốn xóa người này?')) {
+                people = people.filter(p => p.id !== id);
+                saveData();
+                renderList();
+            }
+        }
+        
+        function sortBy(criteria) {
+            if (criteria === 'name') {
+                people.sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+            } else if (criteria === 'count') {
+                people.sort((a, b) => b.count - a.count);
+            }
+            saveData();
+            renderList();
+        }
+        
+        function resetAll() {
+            if (confirm('Bạn có chắc muốn reset tất cả về 0?')) {
+                people.forEach(p => p.count = 0);
+                saveData();
+                renderList();
+            }
+        }
+        
+        function deleteAll() {
+            if (confirm('Bạn có chắc muốn xóa tất cả người trong danh sách?')) {
+                people = [];
+                saveData();
+                renderList();
+            }
+        }
+        
+        function exportData() {
+            const data = people.map(p => `${p.name}: ${p.count} lần`).join('\n');
+            const total = people.reduce((sum, p) => sum + p.count, 0);
+            const exportText = `📊 BÁO CÁO TICK\n\n${data}\n\n🔢 Tổng cộng: ${total} lần`;
+            
+            const blob = new Blob([exportText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `bao-cao-tick-${new Date().toLocaleDateString('vi-VN')}.txt`;
+            a.click();
+        }
+
+        function renderList() {
+            const listEl = document.getElementById('personList');
+            const controlsEl = document.getElementById('controls');
+            
+            if (people.length === 0) {
+                listEl.innerHTML = '<div class="empty-state">Chưa có ai trong danh sách. Hãy thêm người mới!</div>';
+                controlsEl.style.display = 'none';
+                return;
+            }
+            
+            controlsEl.style.display = 'block';
+            
+            // Cập nhật thống kê
+            const totalPeople = people.length;
+            const totalTicks = people.reduce((sum, p) => sum + p.count, 0);
+            document.getElementById('totalPeople').textContent = totalPeople;
+            document.getElementById('totalTicks').textContent = totalTicks;
+
+            listEl.innerHTML = people.map(person => `
+                <div class="person-item">
+                    <div class="person-info">
+                        <div class="person-name">${person.name}</div>
+                        <div class="person-count">${person.count} lần</div>
+                    </div>
+                    <div class="person-actions">
+                        <button class="tick-btn" onclick="tick(${person.id})">✓</button>
+                        <button class="reset-btn" onclick="reset(${person.id})">Reset</button>
+                        <button class="delete-btn" onclick="deletePerson(${person.id})">Xóa</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Cho phép nhấn Enter để thêm người
+        document.getElementById('nameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addPerson();
+            }
+        });
+
+        // Khởi tạo
+        renderList();
+    </script>
+</body>
+</html>
